@@ -4,9 +4,18 @@ on:
     branches:
       - main
       - dev
+# providing env variables on workflow level
+env:
+  MONGODB_DB_NAME: gha-demo
 jobs:
   test:
-    environment: testing
+    env:
+      # just some fake data for demonstration purpose
+      # also NOT idea to unveil user name and password here
+      MONGODB_CLUSTER_ADDRESS: cluster0.15pwqcc.mongodb.net
+      MONGODB_USERNAME: maximilian
+      MONGODB_PASSWORD: X34Mqtpg10D8RGTi
+      PORT: 8080
     runs-on: ubuntu-latest
     steps:
       - name: Get Code
@@ -19,15 +28,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run server
-        run: npm start & npx wait-on http://127.0.0.1:XYZ
+        # the PORT ID is dynamic and we've set an env variable for it
+        run: npm start & npx wait-on http://127.0.0.1:$PORT
       - name: Run tests
         run: npm test
       - name: Output information
-        run: echo "..."
+        # another way to access the env variable is to follow the env
+        # some of the env variables may not be available if they are on job level and belong to other jobs
+        run: |
+          echo "MONGODB_DB_NAME: ${{ env.MONGODB_DB_NAME }}"
   deploy:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Output information
         run: |        
-          echo "..."
+          echo "MONGODB_DB_NAME: ${{ env.MONGODB_DB_NAME }}"
+          
